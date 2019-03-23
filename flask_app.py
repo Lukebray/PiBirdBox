@@ -9,10 +9,13 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     connection = mysql.connector.connect(
-        user='davidplatt', password='tinwhistle',
-        host='127.0.0.1',
-        database='davidplatt$WeatherData',       
-    )
+    host='davidplatt.mysql.pythonanywhere-services.com',
+    user='davidplatt',
+    passwd='tinwhistle',
+    db='davidplatt$WeatherData')
+
     if connection.is_connected():
-        return 'Hello there!' 
+        return 'Hello there!'
+    else:
+        return 'No hello for you'
 
