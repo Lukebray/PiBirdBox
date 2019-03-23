@@ -17,4 +17,4 @@ class RainSensor():
             return 1
         else:
             return 0
-        
+        q
