@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import dht11
+import rainSensor.py
 import time
 import datetime
 import mysql.connector
@@ -10,14 +11,16 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.cleanup()
 
-instance = dht11.DHT11(pin = 4)
+temphum = dht11.DHT11(pin = 4)
+rain = rainSensor.RainSensor(pin = 18)
+
 
 sshtunnel.SSH_TIMEOUT = 5.0
 sshtunnel.TUNNEL_TIMEOUT = 5.0
 
-def dataHandler():
+def weatherData():
     while True:
-            result = instance.read()
+            result = temphum.read()
             if result.is_valid():
                 print("Last Valid Input: " + str(datetime.datetime.now()))
                 print ("Temperature: %d C" % result.temperature)
@@ -31,23 +34,25 @@ def dataHandler():
             else:
                 print("Error ", result.error_code)
 
-with sshtunnel.SSHTunnelForwarder(
+
+ 
+if __name__ == '__main__':
+    with sshtunnel.SSHTunnelForwarder(
     ('ssh.pythonanywhere.com'),
     ssh_username='davidplatt', ssh_password='H@mp5t3Ad',
     remote_bind_address=('davidplatt.mysql.pythonanywhere-services.com', 3306)
 ) as tunnel:
-    connection = mysql.connector.connect(
+        connection = mysql.connector.connect(
         user='davidplatt', password='tinwhistle',
         host='127.0.0.1', port=tunnel.local_bind_port,
         database='davidplatt$WeatherData',       
     )
-    db_info = connection.get_server_info()
-    if connection.is_connected():
-        cursor = connection.cursor()
-        print('Connected to MySQL DB...version on ', db_info)
-        dataHandler()
-    else:
-        print('Failed to connect to database.')
+        db_info = connection.get_server_info()
+        if connection.is_connected():
+            cursor = connection.cursor()
+            print('Connected to MySQL DB...version on ', db_info)
+            dataHandler()
+        else:
+            print('Failed to connect to database.')
     
-    connection.close()
-        
+        connection.close()
