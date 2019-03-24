@@ -1,12 +1,15 @@
-from flask import Flask, render_template
-import json
+from flask import Flask, render_template, jsonify
 import mysql.connector
+import json
 
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
+def index():
+    return render_template("main.html")
 
+@app.route('/get_data')
+def get_data():
     conn = mysql.connector.connect(
     host='davidplatt.mysql.pythonanywhere-services.com',
     user='davidplatt',
@@ -15,15 +18,27 @@ def hello_world():
 
     c = conn.cursor()
 
-    c.execute("SELECT temp FROM data WHERE id=1;")
+    c.execute("SELECT temp, humidity, datetime FROM data;")
 
     rows = c.fetchall()
-    tempData = []
-    for r in rows:
-        tempData.append(r)
 
-    return render_template("main.html", tempData=json.dumps(tempData))
+    tempData = []
+    humData = []
+    labels = []
+    for r in rows:
+        data = list(r)
+        temp = data[0]
+        tempData.append(temp)
+
+        hum = data[1]
+        humData.append(hum)
+
+        datetime = str(data[2])
+        labels.append(datetime)
+
+    return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'labels':labels})})
 
 if __name__ == "__main__":
     app.run()
+
 
