@@ -22,14 +22,10 @@
 // Global parameters:
 // do not resize the chart canvas when its container does (keep at 600x400px)
 Chart.defaults.global.responsive = false;
+Chart.defaults.global.animation.duration = 0;
 
 // get chart canvas
 var ctx = document.getElementById("myChart").getContext("2d");
-
-//declare data variables
-var _labels;
-var _tempData;
-var _humData;
 
 //a function to create charts
 function createLineChart(chartName, theData, canvas) {
@@ -39,16 +35,17 @@ function createLineChart(chartName, theData, canvas) {
   })
 };
 
+//initial chart
 $(document).ready(function(){
   $.ajax({
    url: "/get_data",
    type: "get",
    data: {vals: ''},
    success: function(response) {
-     full_data = JSON.parse(response.payload);
-     _tempData = full_data['tempData'];
-     _humData = full_data['humData'];
-     _labels = full_data['labels'];
+    full_data = JSON.parse(response.payload);
+    _tempData = full_data['tempData'];
+    _humData = full_data['humData'];
+    _labels = full_data['labels'];
      // define the chart data
     var chartData = {
         labels : _labels,
@@ -66,8 +63,43 @@ $(document).ready(function(){
         },
         ]
     };
-     createLineChart("myChart", chartData, ctx);
+    createLineChart("myChart", chartData, ctx);
    },
  });
 });
+
+setInterval (function(){
+    $(document).ready(function(){
+  $.ajax({
+   url: "/get_data",
+   type: "get",
+   data: {vals: ''},
+   success: function(response) {
+    full_data = JSON.parse(response.payload);
+    _tempData = full_data['tempData'];
+    _humData = full_data['humData'];
+    _labels = full_data['labels'];
+     // define the chart data
+    var chartData = {
+        labels : _labels,
+        datasets : [{
+            label: 'Temperature',
+            fill: false,
+            borderColor: 'rgba(255, 0, 0, 1.0)',
+            data: _tempData,
+        },
+        {
+            label: 'Humidity',
+            fill: false,
+            borderColor: 'rgba(0, 0, 255, 1.0)',
+            data: _humData,
+        },
+        ]
+    };
+    createLineChart("myChart", chartData, ctx);
+   },
+ });
+});
+}, 5000);
+
 </script>
