@@ -18,25 +18,37 @@ def get_data():
 
     c = conn.cursor()
 
-    c.execute("SELECT temp, humidity, datetime FROM data;")
+    c.execute("SELECT temp, humidity, rain, datetime FROM data ORDER BY datetime DESC LIMIT 20;")
 
     rows = c.fetchall()
 
     tempData = []
     humData = []
+    rainData = []
     labels = []
     for r in rows:
         data = list(r)
         temp = data[0]
-        tempData.append(temp)
+        tempData.insert(0, temp)
 
         hum = data[1]
-        humData.append(hum)
+        humData.insert(0, hum)
 
-        datetime = str(data[2])
-        labels.append(datetime)
+        rain = data[2]
+        rainData.insert(0, rain)
 
-    return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'labels':labels})})
+        datetime = str(data[3])
+        labels.insert(0, datetime)
+
+    latestRain = rainData[-1]
+    isRaining = True
+
+    if (latestRain == 1):
+        isRaining = True
+    else:
+        isRaining = False
+
+    return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'isRaining':isRaining, 'labels':labels})})
 
 if __name__ == "__main__":
     app.run()
