@@ -42,20 +42,20 @@
 
             <!-- Current Temp -->
             <div class="col-4">
-                <div class="card bg-light mb-3" style="max-width: 18rem;" id="currentTemp">
+                <div class="card bg-light mb-3" style="max-width: 18rem;">
                     <div class="card-header">Current Temperature</div>
                     <div class="card-body">
-                        <h2 class="card-text">14&#8451;</h2>
+                        <h2 class="card-text" id="currentTemp"></h2>
                     </div>
                 </div>
             </div>
 
             <!-- Current Humidity -->
             <div class="col-4">
-                <div class="card bg-light mb-3" style="max-width: 18rem;" id="currentHum">
+                <div class="card bg-light mb-3" style="max-width: 18rem;">
                     <div class="card-header">Current Humidity</div>
                     <div class="card-body">
-                        <h2 class="card-text">55&#37;</h2>
+                        <h2 class="card-text" id="currentHum"></h2>
                     </div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
         <!-- Video content goes here -->
         <div class="row">
             <div class="embed-responsive embed-responsive-16by9">
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/wDM-4yppl2w"
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/Bey4XXJAqS8"
                 frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen></iframe>
             </div>
@@ -101,6 +101,8 @@ Chart.defaults.global.animation.duration = 0;
 var _tempData;
 var _humData;
 var _labels;
+var _currentTemp;
+var _currentHum;
 var _isRaining;
 
 //function to get new data
@@ -145,6 +147,11 @@ $(document).ready(function() {
         _humData = full_data['humData'];
         _isRaining = full_data['isRaining'];
         _labels = full_data['labels'];
+        _currentTemp = _tempData[_tempData.length -1];
+        document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
+        _currentHum = _humData[_humData.length -1];
+        document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
+
         console.log(_isRaining);
         console.log(_tempData);
 
@@ -183,8 +190,10 @@ setInterval(function () {
             _humData = full_data['humData'];
             _isRaining = full_data['isRaining'];
             _labels = full_data['labels'];
-            console.log(_isRaining);
-            console.log(_tempData);
+            _currentTemp = _tempData[_tempData.length -1];
+            document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
+            _currentHum = _humData[_humData.length -1];
+            document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
 
             //check for rain
             if (_isRaining == true) {
