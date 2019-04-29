@@ -37,6 +37,7 @@
         </div>
 
         <hr>
+
         <!-- Cards go here -->
         <div class="row">
 
@@ -59,6 +60,16 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Rain Status -->
+            <div class="col-4">
+                <div class="card bg-light mb-3" style="max-width: 18rem;">
+                    <div class="card-header">Rain Status</div>
+                    <div class="card-body">
+                        <h2 class="card-text" id="currentRain"></h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Charts go here -->
@@ -67,11 +78,25 @@
                 <h1>Temperature & Humidity</h1>
                 <!-- bar chart canvas element -->
                 <canvas id="myChart" height="200"></canvas>
-                <p id="caption">Chart showing temperature and humidity</p>
-            </div>
+                <div class="row">
+                    <div class="col-8">
+                        <p id="caption">Chart showing temperature and humidity</p>
+                    </div>
 
-            <div class = "col-4">
-                <h2 id="rain"></h2>
+                    <div id="dropdown" class="col-4">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Time Period
+                            </button>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <button id="oneDay" class="dropdown-item" type="button" onclick="getDays(1)">Past Day</button>
+                                <button id="sevenDay" class="dropdown-item" type="button" onclick="getDays(7)">Past Week</button>
+                                <button id="thirtyDay" class="dropdown-item" type="button" onclick="getDays(30)">Past 30 days</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -105,10 +130,18 @@ var _currentTemp;
 var _currentHum;
 var _isRaining;
 
+//assign days var
+var days = 5;
+function getDays(x) {
+    days = x;
+    console.log(days);
+}
+console.log(days);
+
 //function to get new data
-function getFreshData() {
+function getFreshData(days) {
     return $.ajax({
-        url: "/get_data",
+        url: "/get_data/" + days,
         type: "GET",
         data: { vals: '' },
     });
@@ -141,7 +174,7 @@ function createLineChart(chartName, theData, canvas) {
 
 //create the initial chart
 $(document).ready(function() {
-    getFreshData().then(function(data) {
+    getFreshData(days).then(function(data) {
         full_data = JSON.parse(data.payload);
         _tempData = full_data['tempData'];
         _humData = full_data['humData'];
@@ -157,9 +190,9 @@ $(document).ready(function() {
 
         //check for rain
         if (_isRaining == true) {
-            document.getElementById("rain").innerHTML = "It\'s raining. Get the washing in!"
+            document.getElementById("currentRain").innerHTML = "It\'s raining."
         } else {
-            document.getElementById("rain").innerHTML = "It\'s not raining. Go for a walk fatty."
+            document.getElementById("currentRain").innerHTML = "It\'s not raining."
         }
 
         //define chart data
@@ -184,7 +217,7 @@ $(document).ready(function() {
 //get new data and redraw chart every 2 seconds
 setInterval(function () {
     $(document).ready(function() {
-        getFreshData().then(function(data) {
+        getFreshData(days).then(function(data) {
             full_data = JSON.parse(data.payload);
             _tempData = full_data['tempData'];
             _humData = full_data['humData'];
@@ -197,9 +230,9 @@ setInterval(function () {
 
             //check for rain
             if (_isRaining == true) {
-                document.getElementById("rain").innerHTML = "It\'s raining. Get the washing in!"
+                document.getElementById("currentRain").innerHTML = "It\'s raining."
             } else {
-                document.getElementById("rain").innerHTML = "It\'s not raining. Go for a walk fatty."
+                document.getElementById("currentRain").innerHTML = "It\'s not raining."
             }
 
             //define chart data

@@ -8,8 +8,8 @@ app = Flask(__name__)
 def index():
     return render_template("main.html")
 
-@app.route('/get_data')
-def get_data():
+@app.route('/get_data/<days>')
+def get_data(days):
     conn = mysql.connector.connect(
     host='davidplatt.mysql.pythonanywhere-services.com',
     user='davidplatt',
