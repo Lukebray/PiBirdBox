@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify
+from datetime import datetime, timedelta
 import mysql.connector
 import json
 
@@ -18,7 +19,13 @@ def get_data(days):
 
     c = conn.cursor()
 
-    c.execute("SELECT temp, humidity, rain, datetime FROM data ORDER BY datetime DESC LIMIT 20;")
+    days = int(days)
+
+    rows = None
+
+    value = datetime.now() - timedelta(days)
+
+    c.execute("SELECT temp, humidity, rain, datetime FROM data WHERE datetime >= '%s' ORDER BY datetime DESC;" % (value))
 
     rows = c.fetchall()
 
@@ -37,8 +44,8 @@ def get_data(days):
         rain = data[2]
         rainData.insert(0, rain)
 
-        datetime = str(data[3])
-        labels.insert(0, datetime)
+        datetimeval = str(data[3])
+        labels.insert(0, datetimeval)
 
     latestRain = rainData[-1]
     isRaining = True
@@ -49,6 +56,7 @@ def get_data(days):
         isRaining = False
 
     return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'isRaining':isRaining, 'labels':labels})})
+
 
 if __name__ == "__main__":
     app.run()

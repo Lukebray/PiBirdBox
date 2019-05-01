@@ -90,9 +90,10 @@
                             </button>
 
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <button id="oneDay" class="dropdown-item" type="button" onclick="getDays(1)">Past Day</button>
-                                <button id="sevenDay" class="dropdown-item" type="button" onclick="getDays(7)">Past Week</button>
-                                <button id="thirtyDay" class="dropdown-item" type="button" onclick="getDays(30)">Past 30 days</button>
+                                <button id="live" class="dropdown-item" type="button" onclick="liveChart()">Live Feed</button>
+                                <button id="oneDay" class="dropdown-item" type="button" onclick="historicChart(1)">Past Day</button>
+                                <button id="sevenDay" class="dropdown-item" type="button" onclick="historicChart(7)">Past Week</button>
+                                <button id="thirtyDay" class="dropdown-item" type="button" onclick="historicChart(30)">Past 30 days</button>
                             </div>
                         </div>
                     </div>
@@ -131,7 +132,7 @@ var _currentHum;
 var _isRaining;
 
 //assign days var
-var days = 5;
+var days = 33;
 function getDays(x) {
     days = x;
     console.log(days);
@@ -166,6 +167,12 @@ function createLineChart(chartName, theData, canvas) {
                         //maxTicksLimit: 5,
                         autoSkip: true
                     }
+                }],
+                yAxes: [{
+                    ticks: {
+                        min: -10,
+                        max: 100
+                    }
                 }]
             }
         }
@@ -173,7 +180,8 @@ function createLineChart(chartName, theData, canvas) {
 }
 
 //create the initial chart
-$(document).ready(function() {
+function initialiseChart(days){
+    console.log(days);
     getFreshData(days).then(function(data) {
         full_data = JSON.parse(data.payload);
         _tempData = full_data['tempData'];
@@ -212,48 +220,83 @@ $(document).ready(function() {
         };
         createLineChart("MyChart", chartData, ctx);
     });
-});
+}
 
-//get new data and redraw chart every 2 seconds
-setInterval(function () {
+var liveData = true;
+console.log("global: " + liveData);
+
+function historicChart(days) {
+    liveData = false;
+    console.log(liveData);
+    initialiseChart(days);
+    console.log(liveData);
+}
+
+$(document).ready(function() {
+    initialiseChart(33);
+})
+
+function liveChart() {
+    console.log(liveData);
+    liveData = true;
+    setInterval(function() {
+        if (liveData == true) {
+            initialiseChart(33)
+        }
+    }, 2000);
+}
+
+if (liveData == true) {
+    console.log(liveData);
     $(document).ready(function() {
-        getFreshData(days).then(function(data) {
-            full_data = JSON.parse(data.payload);
-            _tempData = full_data['tempData'];
-            _humData = full_data['humData'];
-            _isRaining = full_data['isRaining'];
-            _labels = full_data['labels'];
-            _currentTemp = _tempData[_tempData.length -1];
-            document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
-            _currentHum = _humData[_humData.length -1];
-            document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
-
-            //check for rain
-            if (_isRaining == true) {
-                document.getElementById("currentRain").innerHTML = "It\'s raining."
-            } else {
-                document.getElementById("currentRain").innerHTML = "It\'s not raining."
-            }
-
-            //define chart data
-            var chartData = {
-                labels: _labels,
-                datasets: [{
-                    label: 'Temperature',
-                    fill: false,
-                    borderColor: 'rgba(255, 0, 0, 1.0)',
-                    data: _tempData,
-                },{
-                    label: 'Humidity',
-                    fill: false,
-                    borderColor: 'rgba(0, 0, 255, 1.0)',
-                    data: _humData,
-                }]
-            };
-            createLineChart("MyChart", chartData, ctx);
-        });
+        liveChart();
     });
-}, 2000);
+}
+
+
+
+
+
+//get new data and redraw chart every 30 seconds
+// setInterval(function () {
+//     $(document).ready(function() {
+//         getFreshData(days).then(function(data) {
+//             full_data = JSON.parse(data.payload);
+//             _tempData = full_data['tempData'];
+//             _humData = full_data['humData'];
+//             _isRaining = full_data['isRaining'];
+//             _labels = full_data['labels'];
+//             _currentTemp = _tempData[_tempData.length -1];
+//             document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
+//             _currentHum = _humData[_humData.length -1];
+//             document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
+
+//             //check for rain
+//             if (_isRaining == true) {
+//                 document.getElementById("currentRain").innerHTML = "It\'s raining."
+//             } else {
+//                 document.getElementById("currentRain").innerHTML = "It\'s not raining."
+//             }
+
+//             //define chart data
+//             var chartData = {
+//                 labels: _labels,
+//                 datasets: [{
+//                     label: 'Temperature',
+//                     fill: false,
+//                     borderColor: 'rgba(255, 0, 0, 1.0)',
+//                     data: _tempData,
+//                 },{
+//                     label: 'Humidity',
+//                     fill: false,
+//                     borderColor: 'rgba(0, 0, 255, 1.0)',
+//                     data: _humData,
+//                 }]
+//             };
+//             createLineChart("MyChart", chartData, ctx);
+//         });
+//     });
+// }, 2000);
 
 </script>
 </html>
