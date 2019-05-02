@@ -79,22 +79,13 @@
                 <!-- bar chart canvas element -->
                 <canvas id="myChart" height="200"></canvas>
                 <div class="row">
-                    <div class="col-8">
-                        <p id="caption">Chart showing temperature and humidity</p>
-                    </div>
-
                     <div id="dropdown" class="col-4">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Time Period
-                            </button>
+                        <div class="btn-group" role="group" aria-label="Basic example">
 
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <button id="live" class="dropdown-item" type="button" onclick="liveChart()">Live Feed</button>
-                                <button id="oneDay" class="dropdown-item" type="button" onclick="historicChart(1)">Past Day</button>
-                                <button id="sevenDay" class="dropdown-item" type="button" onclick="historicChart(7)">Past Week</button>
-                                <button id="thirtyDay" class="dropdown-item" type="button" onclick="historicChart(30)">Past 30 days</button>
-                            </div>
+                            <button id="live" class="btn btn-secondary" type="button" onclick="liveChart()">Live Feed</button>
+                            <button id="oneDay" class="btn btn-secondary" type="button" onclick="historicChart(1)">Past Day</button>
+                            <button id="sevenDay" class="btn btn-secondary" type="button" onclick="historicChart(7)">Past Week</button>
+                            <button id="thirtyDay" class="btn btn-secondary" type="button" onclick="historicChart(30)">Past 30 days</button>
                         </div>
                     </div>
                 </div>
@@ -118,15 +109,16 @@
 
 <script>
 // Global parameters and variables:
-
-
 // do not resize the chart canvas when its container does (keep at 600x400px)
 Chart.defaults.global.responsive = true;
 Chart.defaults.global.animation.duration = 0;
+Chart.defaults.global.elements.point.radius = 3;
+Chart.defaults.global.elements.point.hoverRadius = 3;
 
 var _tempData;
 var _humData;
 var _labels;
+
 var _currentTemp;
 var _currentHum;
 var _isRaining;
@@ -164,7 +156,6 @@ function createLineChart(chartName, theData, canvas) {
             scales: {
                 xAxes: [{
                     ticks: {
-                        //maxTicksLimit: 5,
                         autoSkip: true
                     }
                 }],
@@ -179,28 +170,25 @@ function createLineChart(chartName, theData, canvas) {
     });
 }
 
-//create the initial chart
+//create chart
 function initialiseChart(days){
     console.log(days);
     getFreshData(days).then(function(data) {
         full_data = JSON.parse(data.payload);
         _tempData = full_data['tempData'];
         _humData = full_data['humData'];
-        _isRaining = full_data['isRaining'];
+        _isRaining = full_data['currentRain'];
         _labels = full_data['labels'];
-        _currentTemp = _tempData[_tempData.length -1];
+        _currentTemp = full_data['currentTemp'];
         document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
-        _currentHum = _humData[_humData.length -1];
+        _currentHum = full_data['currentHum'];
         document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
 
-        console.log(_isRaining);
-        console.log(_tempData);
-
         //check for rain
-        if (_isRaining == true) {
-            document.getElementById("currentRain").innerHTML = "It\'s raining."
+        if (_isRaining == 1) {
+            document.getElementById("currentRain").innerHTML = "It\'s raining.";
         } else {
-            document.getElementById("currentRain").innerHTML = "It\'s not raining."
+            document.getElementById("currentRain").innerHTML = "It\'s not raining.";
         }
 
         //define chart data
@@ -225,27 +213,33 @@ function initialiseChart(days){
 var liveData = true;
 console.log("global: " + liveData);
 
+//function for a historic chart
 function historicChart(days) {
     liveData = false;
-    console.log(liveData);
     initialiseChart(days);
-    console.log(liveData);
+    console.log(_labels);
 }
 
-$(document).ready(function() {
-    initialiseChart(33);
-})
-
+//this function is for the live chart
 function liveChart() {
+    initialiseChart(33);
     console.log(liveData);
     liveData = true;
     setInterval(function() {
         if (liveData == true) {
-            initialiseChart(33)
+            initialiseChart(33);
         }
-    }, 2000);
+    }, 5000);
 }
 
+//create a chart on loading of the page
+$(document).ready(function() {
+    initialiseChart(33);
+});
+
+
+
+//does a live chart
 if (liveData == true) {
     console.log(liveData);
     $(document).ready(function() {
