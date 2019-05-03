@@ -30,11 +30,11 @@ def weatherData():
                 print ("Humidity: %d %%" % resultDHT.humidity)
                 print ("Raining?: %d" % resultRain)
                 query = "INSERT INTO data (temp, humidity, rain, datetime) VALUES (%s, %s, %s, %s)"
-                args = (resultDHT.temperature, resultDHT.humidity, resultRain, str(datetime.datetime.now()))
+                args = (resultDHT.temperature, resultDHT.humidity, resultRain, datetime.datetime.now())
 
                 cursor.execute(query, args)
                 connection.commit()
-                time.sleep(1)
+                time.sleep(60)
             else:
                 print("Error ", resultDHT.error_code)
 

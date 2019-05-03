@@ -37,41 +37,53 @@
         </div>
 
         <hr>
+
+
         <!-- Cards go here -->
-        <div class="row">
+        <div class="card-deck">
 
             <!-- Current Temp -->
-            <div class="col-4">
-                <div class="card bg-light mb-3" style="max-width: 18rem;">
-                    <div class="card-header">Current Temperature</div>
-                    <div class="card-body">
-                        <h2 class="card-text" id="currentTemp"></h2>
-                    </div>
+            <div class="card bg-light mb-3 text-center">
+                <div class="card-header">Current Temperature</div>
+                <div class="card-body">
+                    <h3 class="card-text" id="currentTemp"></h3>
                 </div>
             </div>
 
             <!-- Current Humidity -->
-            <div class="col-4">
-                <div class="card bg-light mb-3" style="max-width: 18rem;">
-                    <div class="card-header">Current Humidity</div>
-                    <div class="card-body">
-                        <h2 class="card-text" id="currentHum"></h2>
-                    </div>
+            <div class="card bg-light mb-3 text-center">
+                <div class="card-header">Current Humidity</div>
+                <div class="card-body">
+                    <h3 class="card-text" id="currentHum"></h3>
+                </div>
+            </div>
+
+            <!-- Rain Status -->
+            <div class="card bg-light mb-3 text-center">
+                <div class="card-header">Rain Status</div>
+                <div class="card-body">
+                    <h3 class="card-text" id="currentRain"></h3>
                 </div>
             </div>
         </div>
 
+        <hr>
         <!-- Charts go here -->
         <div class="row">
-            <div id="tempHumChart" class="col-8">
-                <h1>Temperature & Humidity</h1>
+            <div id="tempHumChart" class="col-12">
+                <h3>Temperature & Humidity Chart</h3>
                 <!-- bar chart canvas element -->
-                <canvas id="myChart" height="200"></canvas>
-                <p id="caption">Chart showing temperature and humidity</p>
-            </div>
-
-            <div class = "col-4">
-                <h2 id="rain"></h2>
+                <canvas class="my-4 chartjs-render-monitor" id="myChart" height="150px"></canvas>
+                <div class="row">
+                    <div id="dropdown" class="col-4">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button id="live" class="btn btn-secondary" type="button" onclick="liveChart()">Live Feed</button>
+                            <button id="oneDay" class="btn btn-secondary" type="button" onclick="historicChart(1)">Past Day</button>
+                            <button id="sevenDay" class="btn btn-secondary" type="button" onclick="historicChart(7)">Past Week</button>
+                            <button id="thirtyDay" class="btn btn-secondary" type="button" onclick="historicChart(30)">Past 30 days</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -92,30 +104,36 @@
 
 <script>
 // Global parameters and variables:
-
-
-// do not resize the chart canvas when its container does (keep at 600x400px)
 Chart.defaults.global.responsive = true;
+Chart.defaults.global.maintainAspectRatio = true;
 Chart.defaults.global.animation.duration = 0;
+Chart.defaults.global.elements.point.radius = 3;
+Chart.defaults.global.elements.point.hoverRadius = 3;
 
 var _tempData;
 var _humData;
 var _labels;
+
 var _currentTemp;
 var _currentHum;
 var _isRaining;
 
+//assign days var
+var days = 33;
+
+// get chart canvas
+var ctx = document.getElementById("myChart").getContext("2d");
+
 //function to get new data
-function getFreshData() {
+function getFreshData(days) {
     return $.ajax({
-        url: "/get_data",
+        url: "/get_data/" + days,
         type: "GET",
         data: { vals: '' },
     });
 }
 
-// get chart canvas
-var ctx = document.getElementById("myChart").getContext("2d");
+
 
 //a function to create charts
 function createLineChart(chartName, theData, canvas) {
@@ -125,13 +143,18 @@ function createLineChart(chartName, theData, canvas) {
         options: {
             title: {
                 display: true,
-                text: 'My Chart'
+                text: chartName
             },
             scales: {
                 xAxes: [{
                     ticks: {
-                        //maxTicksLimit: 5,
                         autoSkip: true
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        min: -10,
+                        max: 100
                     }
                 }]
             }
@@ -139,27 +162,25 @@ function createLineChart(chartName, theData, canvas) {
     });
 }
 
-//create the initial chart
-$(document).ready(function() {
-    getFreshData().then(function(data) {
+//create chart function
+function initialiseChart(days){
+    console.log(days);
+    getFreshData(days).then(function(data) {
         full_data = JSON.parse(data.payload);
         _tempData = full_data['tempData'];
         _humData = full_data['humData'];
-        _isRaining = full_data['isRaining'];
+        _isRaining = full_data['currentRain'];
         _labels = full_data['labels'];
-        _currentTemp = _tempData[_tempData.length -1];
+        _currentTemp = full_data['currentTemp'];
         document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
-        _currentHum = _humData[_humData.length -1];
+        _currentHum = full_data['currentHum'];
         document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
 
-        console.log(_isRaining);
-        console.log(_tempData);
-
         //check for rain
-        if (_isRaining == true) {
-            document.getElementById("rain").innerHTML = "It\'s raining. Get the washing in!"
+        if (_isRaining == 1) {
+            document.getElementById("currentRain").innerHTML = "It\'s raining.";
         } else {
-            document.getElementById("rain").innerHTML = "It\'s not raining. Go for a walk fatty."
+            document.getElementById("currentRain").innerHTML = "It\'s not raining.";
         }
 
         //define chart data
@@ -177,50 +198,44 @@ $(document).ready(function() {
                 data: _humData,
             }]
         };
-        createLineChart("MyChart", chartData, ctx);
+        createLineChart("Temperature & Humidity Chart", chartData, ctx);
     });
+}
+
+var liveData = true;
+console.log("global: " + liveData);
+
+//function for a historic chart
+function historicChart(days) {
+    liveData = false;
+    initialiseChart(days);
+    console.log(_labels);
+}
+
+//this function is for the live chart
+function liveChart() {
+    initialiseChart(33);
+    console.log(liveData);
+    liveData = true;
+    setInterval(function() {
+        if (liveData == true) {
+            initialiseChart(33);
+        }
+    }, 5000);
+}
+
+//create a chart on loading of the page
+$(document).ready(function() {
+    initialiseChart(33);
 });
 
-//get new data and redraw chart every 2 seconds
-setInterval(function () {
+//does a live chart
+if (liveData == true) {
+    console.log(liveData);
     $(document).ready(function() {
-        getFreshData().then(function(data) {
-            full_data = JSON.parse(data.payload);
-            _tempData = full_data['tempData'];
-            _humData = full_data['humData'];
-            _isRaining = full_data['isRaining'];
-            _labels = full_data['labels'];
-            _currentTemp = _tempData[_tempData.length -1];
-            document.getElementById("currentTemp").innerHTML = _currentTemp + "&#8451;";
-            _currentHum = _humData[_humData.length -1];
-            document.getElementById("currentHum").innerHTML = _currentHum + "&#37;";
-
-            //check for rain
-            if (_isRaining == true) {
-                document.getElementById("rain").innerHTML = "It\'s raining. Get the washing in!"
-            } else {
-                document.getElementById("rain").innerHTML = "It\'s not raining. Go for a walk fatty."
-            }
-
-            //define chart data
-            var chartData = {
-                labels: _labels,
-                datasets: [{
-                    label: 'Temperature',
-                    fill: false,
-                    borderColor: 'rgba(255, 0, 0, 1.0)',
-                    data: _tempData,
-                },{
-                    label: 'Humidity',
-                    fill: false,
-                    borderColor: 'rgba(0, 0, 255, 1.0)',
-                    data: _humData,
-                }]
-            };
-            createLineChart("MyChart", chartData, ctx);
-        });
+        liveChart();
     });
-}, 2000);
+}
 
 </script>
 </html>
