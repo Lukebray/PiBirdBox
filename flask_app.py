@@ -46,7 +46,8 @@ def get_data(days):
         rows = c.fetchall()
 
         df = pd.DataFrame(rows, columns=['temp', 'hum', 'rain', 'date']).set_index('date')
-        df_day = df.resample('d').mean()
+
+        df_day = df.resample('d').mean().fillna(0)
         print('DF_DAY IS BELOW THIS')
         print(df_day)
 
@@ -78,7 +79,7 @@ def get_data(days):
         rows = c.fetchall()
 
         df = pd.DataFrame(rows, columns=['temp', 'hum', 'rain', 'date']).set_index('date')
-        df_hour = df.resample('H').mean()
+        df_hour = df.resample('H').mean().fillna(0)
         print('DF_HOUR IS BELOW THIS')
         print(df_hour)
 
@@ -132,7 +133,7 @@ def get_data(days):
         else:
             isRaining = False
 
-            return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'isRaining':isRaining, 'labels':labels, 'currentTemp':currentTemp, 'currentHum':currentHum, 'currentRain':currentRain})})
+        return jsonify({'payload':json.dumps({'tempData':tempData, 'humData':humData, 'isRaining':isRaining, 'labels':labels, 'currentTemp':currentTemp, 'currentHum':currentHum, 'currentRain':currentRain})})
 
 if __name__ == "__main__":
     app.run()
