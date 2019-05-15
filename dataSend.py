@@ -39,24 +39,27 @@ def weatherData():
                 print("Error ", resultDHT.error_code)
 
 
- 
+
 if __name__ == '__main__':
-    with sshtunnel.SSHTunnelForwarder(
-    ('ssh.pythonanywhere.com'),
-    ssh_username='davidplatt', ssh_password='H@mp5t3Ad',
-    remote_bind_address=('davidplatt.mysql.pythonanywhere-services.com', 3306)
-) as tunnel:
-        connection = mysql.connector.connect(
-        user='davidplatt', password='tinwhistle',
-        host='127.0.0.1', port=tunnel.local_bind_port,
-        database='davidplatt$WeatherData',       
-    )
-        db_info = connection.get_server_info()
-        if connection.is_connected():
-            cursor = connection.cursor()
-            print('Connected to MySQL DB...version on ', db_info)
-            weatherData()
-        else:
-            print('Failed to connect to database.')
-    
+    while True:
+        with sshtunnel.SSHTunnelForwarder(
+        ('ssh.pythonanywhere.com'),
+        ssh_username='davidplatt', ssh_password='H@mp5t3Ad',
+        remote_bind_address=('davidplatt.mysql.pythonanywhere-services.com', 3306)
+    ) as tunnel:
+            connection = mysql.connector.connect(
+            user='davidplatt', password='tinwhistle',
+            host='127.0.0.1', port=tunnel.local_bind_port,
+            database='davidplatt$WeatherData',
+        )
+            db_info = connection.get_server_info()
+            if connection.is_connected():
+                cursor = connection.cursor()
+                print('Connected to MySQL DB...version on ', db_info)
+                weatherData()
+            else:
+                print('Failed to connect to database.')
+                print('Reconnecting...')
+                time.sleep(5)
+
         connection.close()
