@@ -92,8 +92,8 @@
         <!-- Video content goes here -->
         <div class="row">
             <div class="embed-responsive embed-responsive-16by9">
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/oebVXnci97c"
-                frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/_Mi5wGlvrFQ" frameborder="0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
         <br>
@@ -108,8 +108,8 @@
 Chart.defaults.global.responsive = true;
 Chart.defaults.global.maintainAspectRatio = true;
 Chart.defaults.global.animation.duration = 0;
-Chart.defaults.global.elements.point.radius = 3;
-Chart.defaults.global.elements.point.hoverRadius = 3;
+Chart.defaults.global.elements.point.radius = 6;
+Chart.defaults.global.elements.point.hoverRadius = 6;
 
 var _tempData;
 var _humData;
@@ -134,11 +134,14 @@ function getFreshData(days) {
     });
 }
 
-
+var myChart;
 
 //a function to create charts
 function createLineChart(chartName, theData, canvas) {
-    var chartName = new Chart(canvas, {
+    if (window.myChart != undefined) {
+        window.myChart.destroy();
+    }
+    window.myChart = new Chart(canvas, {
         type: 'line',
         data: theData,
         options: {
@@ -211,6 +214,7 @@ function historicChart(days) {
     liveData = false;
     initialiseChart(days);
     console.log(_labels);
+    console.log(liveData);
 }
 
 //this function is for the live chart
@@ -223,6 +227,7 @@ function liveChart() {
             initialiseChart(33);
         }
     }, 5000);
+    console.log(liveData);
 }
 
 //create a chart on loading of the page
